@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Fantasy · overworld & battles</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            image-rendering: pixelated;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body {
+            background: #0b1a19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+        .ff-container {
+            max-width: 980px;
+            width: 100%;
+            background: #18232c;
+            border: 6px solid #9c7e5c;
+            box-shadow: 10px 10px 0 #0e1a1a;
+            padding: 22px 20px 20px 20px;
+        }
+
+        /* top status bar (final fantasy style) */
+        .status-bar {
+            background: #1c3a32;
+            border: 4px solid #b1976b;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            color: #bde5c0;
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            text-shadow: 2px 2px 0 #0d2923;
+        }
+        .party-hp {
+            display: flex;
+            gap: 32px;
+        }
+
+        /* main game area: map + battle are toggled */
+        .game-screen {
+            background: #263d32;
+            border: 4px solid #d8b282;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 380px;
+            transition: background 0.2s;
+        }
+
+        /* map grid */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            aspect-ratio: 8 / 5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .map-tile {
+            background: #4e7b5a;
+            border: 2px solid #30523d;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: inset 0 0 0 1px #85b38c;
+            color: #f7f0cb;
+        }
+        .map-tile.grass { background: #4f9e6a; }
+        .map-tile.forest { background: #256d47; }
+        .map-tile.water { background: #3f7b9e; }
+        .map-tile.mountain { background: #7e6a4c; }
+        .player-tile {
+            background: #ffd966 !important;
+            color: #000 !important;
+            font-weight: bold;
+            border-color: #f0f0a0;
+        }
+
+        /* battle UI (hidden by default) */
+        .battle-ui {
+            display: none;
+            color: #fff4d6;
+        }
+        .battle-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .enemy-panel {
+            background: #3a2a2a;
+            border: 4px solid #b2624d;
+            padding: 20px 40px;
+            text-align: center;
+        }
+        .enemy-name {
+            font-size: 2.2rem;
+            background: #672e2e;
+            padding: 8px 20px;
+            margin-bottom: 12px;
+        }
+        .enemy-hp {
+            font-size: 2rem;
+            background: #2d1c1c;
+            padding: 10px;
+        }
+        .party-panel {
+            display: flex;
+            gap: 25px;
+        }
+        .hero-battle-card {
+            background: #1f4f5e;
+            border: 4px solid #bda46b;
+            padding: 15px 20px;
+            width: 170px;
+        }
+        .battle-commands {
+            margin-top: 20px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .battle-btn {
+            background: #c9a87c;
+            border: 4px solid #5b4830;
+            padding: 12px 36px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #3d2e1d;
+            text-transform: uppercase;
+        }
+        .battle-btn:active {
+            transform: translate(4px,4px);
+            box-shadow: none;
+        }
+
+        /* message log */
+        .message-log {
+            background: #10261e;
+            border: 4px solid #b68f62;
+            padding: 16px 24px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #d3efc7;
+            margin: 20px 0;
+            min-height: 80px;
+        }
+
+        /* inventory strip */
+        .item-strip {
+            background: #1e423b;
+            border: 4px solid #c8a16b;
+            display: flex;
+            gap: 28px;
+            padding: 12px 24px;
+            color: #ffefc0;
+            font-weight: bold;
+            font-size: 1.3rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .item-badge {
+            background: #3f6853;
+            border: 3px solid #e4b87a;
+            padding: 6px 18px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #234432;
+        }
+        .item-badge:active {
+            transform: translate(2px,2px);
+            box-shadow: none;
+        }
+
+        .footer-bar {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            background: #202f29;
+            border-top: 4px solid #b59056;
+            padding: 12px 18px;
+            color: #fad791;
+        }
+    </style>
+</head>
+<body>
+<div class="ff-container">
+    <!-- status: HP / MP / GIL -->
+    <div class="status-bar">
+        <div class="party-hp">
+            <span>⚔️ Warrior <span id="warriorHp">230/230</span></span>
+            <span>🔮 Mage <span id="mageHp">150/150</span></span>
+        </div>
+        <span>💰 <span id="gilValue">850</span>G</span>
+    </div>
+
+    <!-- dynamic screen: map (default) / battle (hidden) -->
+    <div class="game-screen" id="gameScreen">
+        <!-- MAP VIEW (grid) -->
+        <div id="mapView">
+            <div class="map-grid" id="mapGrid"></div>
+            <div style="text-align: center; color:#efe6b0; margin-top:12px;">⬆️⬇️⬅️➡️ move (arrow keys) · enter tall grass → battle</div>
+        </div>
+        <!-- BATTLE VIEW (hidden initially) -->
+        <div id="battleView" class="battle-ui">
+            <div class="battle-row">
+                <div class="enemy-panel">
+                    <div class="enemy-name" id="battleEnemyName">🐉 GOBLIN</div>
+                    <div class="enemy-hp" id="battleEnemyHp">HP: 86/86</div>
+                </div>
+                <div class="party-panel">
+                    <div class="hero-battle-card">
+                        <div>⚔️ WARRIOR</div>
+                        <div id="battleWarriorHp">230/230</div>
+                        <div>MP 32</div>
+                    </div>
+                    <div class="hero-battle-card">
+                        <div>🔮 MAGE</div>
+                        <div id="battleMageHp">150/150</div>
+                        <div>MP 70</div>
+                    </div>
+                </div>
+            </div>
+            <div class="battle-commands">
+                <div class="battle-btn" id="battleAttack">⚔️ ATTACK</div>
+                <div class="battle-btn" id="battleMagic">✨ FIRE</div>
+                <div class="battle-btn" id="battleItem">🧪 ITEM</div>
+                <div class="battle-btn" id="battleFlee">🏃 FLEE</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- message log (both map / battle) -->
+    <div class="message-log" id="globalMessage">🌍 Move with arrow keys. Step into grass for battle.</div>
+
+    <!-- inventory strip (usable in battle) -->
+    <div class="item-strip">
+        <div class="item-badge" id="usePotion">🧴 Potion x<span id="potionQty">4</span></div>
+        <div class="item-badge" id="usePhoenix">🪽 Phoenix x<span id="phoenixQty">1</span></div>
+        <div class="item-badge" id="useElixir">✨ Elixir x<span id="elixirQty">1</span></div>
+        <div>⚡ LIMIT <span id="limitGauge">0/4</span></div>
+    </div>
+
+    <!-- footer close (resets message) -->
+    <div class="footer-bar">
+        <span>📜 FINAL FANTASY · overworld</span>
+        <span id="closeBtn" style="cursor:pointer; border:2px solid #ad813b; padding:0 12px;">CLOSE</span>
+    </div>
+</div>
+</body>
+</html>

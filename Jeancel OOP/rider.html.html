@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>RIDER - Ride-Sharing UI</title>
+  <link rel="stylesheet" href="rider.css.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">RIDER</div>
+      <img class="avatar" src="jeancell.jpg" alt="User">
+    </header>
+
+    <!-- Search Bar -->
+    <section class="search">
+      <input type="text" placeholder="Enter pickup location..." />
+      <input type="text" placeholder="Enter destination..." />
+    </section>
+
+    <!-- Map Placeholder -->
+    <div class="map-placeholder">
+      <span>📍Final Destination</span>
+    </div>
+
+    <!-- Vehicle Options -->
+    <section class="vehicle-options">
+      <div class="vehicle selected">
+        <div class="icon">🚗</div>
+        <span>RiderCar</span>
+        <small>₱180 est.</small>
+      </div>
+      <div class="vehicle">
+        <div class="icon">🏍</div>
+        <span>RiderBike</span>
+        <small>₱90 est.</small>
+      </div>
+      <div class="vehicle">
+        <div class="icon">🚐</div>
+        <span>RiderVan</span>
+        <small>₱250 est.</small>
+      </div>
+    </section>
+
+    <!-- Book Button -->
+    <button class="book-btn">Book Now</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
